@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HOME</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f8fb;
+            margin: 0;
+            padding: 40px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-bottom: 15px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        .complaints-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .complaint-box {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .complaint-box img {
+            margin-top: 10px;
+            border-radius: 5px;
+            max-width: 100%;
+        }
+
+        .complaint-box a {
+            color: #2980b9;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        .complaint-box a:hover {
+            text-decoration: underline;
+        }
+
+        .form-section {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        form input, form textarea, form select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+        .messages {
+            margin-top: 20px;
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .messages li {
+            color: green;
+            margin-bottom: 5px;
+        }
+
+        .logout-link {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .logout-link button {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            font-size: 16px;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .welcome {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 18px;
+            color: #555;
+        }
+
+        @media screen and (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+</head>
+<body>
+<div>
+    <!--form for search box -->
+    <form method="get" style="display: flex; gap: 10px;"><!--to show form elements as sidebyside-->
+            {% csrf_token %}
+            <input type="text" name="q" placeholder="search" value="{{request.GET.q}}"> <!--here value is stored as q that is search value to  show it after search button that is after page loads again also-->
+            <button type="submit" value="search">Search</button>
+
+     </form>
+</div>
+
+<div class="container">
+
+    <h1>Municipality Complaint Registration Portal</h1>
+
+    <div class="welcome">
+        Welcome, <strong>{{ request.user.username }}</strong>
+    </div>
+
+    <div class="grid">
+        <!-- Complaints Section -->
+        <div class="complaints-list">
+            <h2>Previous Complaints</h2>
+            <ul>
+                {% if complaint %}
+                    {% for complaints in complaint %}
+                        <li class="complaint-box">
+                            <strong>{{ forloop.counter }}. Title:</strong> {{ complaints.title }}<br>
+                            <strong>Description:</strong> {{ complaints.description }}<br>
+                            <strong>Image:</strong>
+                            {% if complaints.image %}
+                                <br><img src="{{ complaints.image.url }}" alt="Complaint Image">
+                            {% else %}
+                                No image provided.
+                            {% endif %}
+                            <br><strong>Submitted on:</strong> {{ complaints.created_at|date:"F d, Y H:i" }}<br>
+                            <a href="{% url 'update' complaints.id %}">Update</a> |
+                            <a href="{% url 'delete' complaints.id %}">Delete</a>
+                        </li>
+                    {% endfor %}
+                {% else %}
+                    <li>No previous complaints</li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <!-- form for adding complaint-->
+        <div class="form-section">
+            <h2>Add Complaint</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <!--
+                <p>{{ form.title.label_tag }} {{ form.title }}</p>
+                <p>{{ form.description.label_tag }} {{ form.description }}</p>
+                <p>{{ form.image.label_tag }} {{ form.image }}</p>
+                <button type="submit">Submit</button>-->
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- form for Logout as we using inbuilt logout function so required itas form instead of link -->
+    <div class="logout-link">
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
+    </div>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+
+</body>
+</html>
